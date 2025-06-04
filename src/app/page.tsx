@@ -1,103 +1,143 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import React, { useState, useCallback, useEffect } from 'react';
+import ProblemStatement from '@/components/ProblemStatement';
+import CodeEditor from '@/components/CodeEditor';
+import OutputConsole from '@/components/OutputConsole';
+import { runCodeAction } from './actions';
+import { getBoilerplate } from '@/lib/codeSnippets';
+import { problems } from '@/data/problemsData';
+
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/components/ui/resizable";
+
+import clsx from 'clsx';
+import { CodeIcon } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+
+
+export default function HomePage() {
+  const [currentProblemIndex, setCurrentProblemIndex] = useState(0);
+  const currentProblem = problems[currentProblemIndex] || problems[0];
+  const [activeLanguage, setActiveLanguage] = useState(currentProblem.language);
+
+
+  const [code, setCode] = useState(getBoilerplate(currentProblem.language));
+  const [output, setOutput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Effect to update code and reset activeLanguage when current problem changes
+  useEffect(() => {
+    // When a new problem is selected, reset the activeLanguage to that problem's default
+    // and load the corresponding boilerplate.
+    if (currentProblem) {
+      setActiveLanguage(currentProblem.language);
+      setCode(getBoilerplate(currentProblem.language));
+      setOutput(''); // Clear output on problem change
+    }
+  }, [currentProblemIndex, currentProblem]); // Dependency on currentProblem ensures update when problem changes
+
+  const handleRunCode = useCallback(async () => {
+    setIsLoading(true);
+    setOutput('Running code...');
+
+    try {
+      // IMPORTANT: Use activeLanguage for the runCodeAction
+      const result = await runCodeAction(code, activeLanguage);
+
+      if (result.error) {
+        setOutput(`Error: ${result.error}`);
+      } else {
+        setOutput(result.output || 'No output received.');
+      }
+    } catch (error: any) {
+      console.error("Error calling Server Action:", error);
+      setOutput(`Client Error: Could not execute code. Details: ${error.message}`);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [code, activeLanguage]); // Dependency on activeLanguage here
+
+  const handleProblemChange = (index: number) => {
+    if (index >= 0 && index < problems.length) {
+      setCurrentProblemIndex(index);
+    }
+  };
+
+  // This handler is called when the user explicitly changes the language in the dropdown
+  const handleLanguageChangeByUser = useCallback((newLanguage: string) => {
+    setActiveLanguage(newLanguage); // Update the active language state
+    setCode(getBoilerplate(newLanguage)); // Load boilerplate for the newly selected language
+  }, []); // No dependencies needed as it only sets state and uses a pure function
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="flex flex-col h-screen bg-gray-900 text-gray-100 font-sans">
+      <ResizablePanelGroup
+        direction="horizontal"
+        className="flex-1 overflow-hidden"
+      >
+        {/* Left Panel -> Problem List and Problem Statements */}
+        <ResizablePanel defaultSize={30} minSize={20} maxSize={50} className="flex">
+          <div className="w-10 flex-shrink-0 bg-gray-800 border-r border-gray-700 overflow-y-auto custom-scrollbar">
+            <h3 className="text-sm font-medium flex justify-center items-center py-3 text-gray-300 border-b border-gray-700 sticky top-0 bg-gray-800 z-10 text-center">
+              <CodeIcon className="w-5 h-5" />
+            </h3>
+            <ul className="py-2">
+              {problems.map((problem, index) => (
+                <li key={problem.id}>
+                  <Button
+                    onClick={() => handleProblemChange(index)}
+                    className={clsx(
+                      "w-full text-center py-2 text-sm transition-all duration-200 focus:outline-none rounded-none",
+                      currentProblemIndex === index
+                        ? 'bg-blue-600 text-white font-semibold shadow-inner'
+                        : 'hover:bg-gray-700 text-gray-300 hover:text-white'
+                    )}
+                  >
+                    {index + 1}
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          </div>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+          <ProblemStatement
+            title={currentProblem.title}
+            description={currentProblem.description}
+            examples={currentProblem.examples}
+            constraints={currentProblem.constraints}
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        </ResizablePanel>
+
+        <ResizableHandle withHandle className="bg-gray-800 hover:bg-gray-700 w-2 transition-colors duration-200" />
+
+        {/* Right Panel -> Code Editor and Output (Vertical Split) */}
+        <ResizablePanel defaultSize={70}>
+          <ResizablePanelGroup direction="vertical">
+            <ResizablePanel defaultSize={70} minSize={30} className="flex flex-col">
+              {/* Pass props to CodeEditor, using activeLanguage now */}
+              <CodeEditor
+                code={code}
+                language={activeLanguage} // Pass the active language
+                onCodeChange={setCode}
+                onLanguageChange={handleLanguageChangeByUser} // Pass the user-driven language change handler
+                onRunCode={handleRunCode}
+                isLoading={isLoading}
+                readOnly={isLoading}
+              />
+            </ResizablePanel>
+
+            <ResizableHandle withHandle className="bg-gray-800 hover:bg-gray-700 h-2 transition-colors duration-200" />
+
+            <ResizablePanel defaultSize={50} minSize={30} maxSize={60} className="flex flex-col">
+                <OutputConsole output={output} />
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        </ResizablePanel>
+      </ResizablePanelGroup>
     </div>
   );
 }

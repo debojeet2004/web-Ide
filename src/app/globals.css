@@ -3,6 +3,9 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  /* Add more custom dark colors if needed for specific scrollbar shades */
+  --scrollbar-thumb-dark: #3a3a3a; /* A darker gray for the thumb */
+  --scrollbar-track-dark: #1a1a1a; /* An even darker gray for the track */
 }
 
 @theme inline {
@@ -16,6 +19,12 @@
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
+    /* Ensure these are dark for dark mode scrollbars */
+    --scrollbar-thumb-dark: #4a4a4a; /* Darker thumb in dark mode */
+    --scrollbar-track-dark: #1a1a1a; /* Darker track in dark mode */
+    /* Shadcn's muted-foreground and background are good, but you can override for scrollbars */
+    --muted-foreground-scroll: hsl(var(--muted-foreground)); /* Use existing if preferred */
+    --background-scroll: hsl(var(--background)); /* Use existing if preferred */
   }
 }
 
@@ -23,4 +32,27 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+
+/* Custom scrollbar styling for a modern look */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px; /* Made thinner: Changed from 8px to 6px */
+  height: 6px; /* For horizontal scrollbars */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb-dark); /* Made darker using a custom var */
+  border-radius: 3px; /* Slightly smaller border radius */
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background-color: var(--scrollbar-track-dark); /* Made darker using a custom var */
+}
+
+/* For Firefox (less granular control) */
+.custom-scrollbar {
+  scrollbar-width: thin; /* This is relative, let's keep it thin */
+  /* Directly specify darker colors here or use the custom vars */
+  scrollbar-color: var(--scrollbar-thumb-dark) var(--scrollbar-track-dark); /* Made darker */
 }
