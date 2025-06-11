@@ -23,6 +23,7 @@ import {
 
 import { problems } from "@/data/problemsData";
 import Editor from "@monaco-editor/react";
+import { CircleCheckBig, Sparkles } from "lucide-react";
 
 interface SolutionViewerProps {
   problemId: string;
@@ -63,7 +64,8 @@ const [copied, setCopied] = useState(false)
       <AlertDialog open={showConfirmation} onOpenChange={setShowConfirmation}>
         <AlertDialogTrigger asChild>
           <Button className="px-4 py-1.5 rounded-md text-sm font-semibold shadow-md transition duration-300 transform bg-blue-600 hover:bg-blue-700 active:scale-95">
-            View Solution
+            <Sparkles />
+            Solution
           </Button>
         </AlertDialogTrigger>
 
@@ -144,16 +146,8 @@ const [copied, setCopied] = useState(false)
             >
               {copied ? (
                 <>
-                  <svg
-                    className="w-4 h-4 mr-1 text-green-400"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                  </svg>
                   Copied
+                  <CircleCheckBig />
                 </>
               ) : (
                 "Copy Solution"

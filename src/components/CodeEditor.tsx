@@ -8,6 +8,7 @@ import clsx from 'clsx';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import SolutionViewer from './SolutionViewer';
+import { Play } from 'lucide-react';
 
 interface CodeEditorProps {
   code: string;
@@ -70,7 +71,12 @@ export default function CodeEditor({
                 : "bg-green-600 hover:bg-green-700 active:scale-95"
             )}
           >
-            {isLoading ? 'Running...' : 'Run Code'}
+            {isLoading ? 'Running...' : (
+              <>
+              <Play className="w-4 h-4 mr-1 inline-block" />
+              Run Code
+              </>
+            )}
           </Button>
         </div>
       </div>
