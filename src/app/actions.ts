@@ -1,16 +1,18 @@
-'use server'; 
+// src/app/actions.ts
+'use server';
 
-import axios from 'axios'; 
+import axios from 'axios';
 
 const languageMap: { [key: string]: string } = {
-  javascript: 'node',
+  javascript: 'javascript',
   python: 'python',
   cpp: 'cpp',
   java: 'java',
 };
 
 const languageVersionMap: { [key: string]: string } = {
-  node: '16.14.0',
+  javascript: '18.15.0',
+  // deno: '1.32.3',
   python: '3.10.0',
   cpp: '10.2.0',
   java: '15.0.2',
@@ -18,7 +20,8 @@ const languageVersionMap: { [key: string]: string } = {
 
 export async function runCodeAction(
   code: string,
-  language: string
+  language: string,
+  stdin: string 
 ): Promise<{ output?: string; error?: string }> {
   try {
     const runtimeLanguage = languageMap[language];
@@ -31,7 +34,7 @@ export async function runCodeAction(
     let fileName: string;
     switch (language) {
       case 'java':
-        fileName = 'Main.java';
+        fileName = 'Solution.java';
         break;
       case 'cpp':
         fileName = 'main.cpp';
@@ -46,16 +49,27 @@ export async function runCodeAction(
         fileName = 'main.txt';
     }
 
+    console.log('stdin:', stdin)
+
+    //  // --- NEW ADDITION: Define arguments for the runtime ---
+    // let programArgs: string[] = [];
+    // if (runtimeLanguage === 'deno') {
+    //   // For Deno, we need to explicitly allow read access to /dev/stdin
+    //   programArgs.push('--allow-read');
+    // }
+    // // --- END NEW ADDITION ---
 
     const response = await axios.post('https://emkc.org/api/v2/piston/execute', {
       language: runtimeLanguage,
       version: runtimeVersion,
       files: [
         {
-          name: fileName, 
+          name: fileName,
           content: code,
         },
       ],
+      stdin: stdin, // ADDED: Pass the stdin here
+      // args: programArgs,
     }, {
       headers: {
         'Content-Type': 'application/json',
@@ -66,35 +80,42 @@ export async function runCodeAction(
     let output = '';
     let error = '';
 
-    if (data.run) {
+    // Handle compilation errors
+    if (data.compile && data.compile.stderr) {
+      error = `Compile Error:\n${data.compile.stderr}`;
+    }
+    // Handle runtime errors
+    else if (data.run) {
       if (data.run.stdout) {
         output = data.run.stdout;
+        console.log('Run Output:', output); // Log the run output
       }
       if (data.run.stderr) {
         error = data.run.stderr;
+        console.error('Run Error:', error); // Log the run error
       }
-      if (data.run.code !== 0 && !error) { 
-         error = `Runtime Error (Exit Code: ${data.run.code})`;
+      if (data.run.code !== 0 && !error) {
+        error = `Runtime Error (Exit Code: ${data.run.code})`;
+        console.log('Run Exit Code:', data.run.code); // Log the exit code
       }
-    } else if (data.compile) {
-        if (data.compile.stderr) {
-            error = `Compile Error:\n${data.compile.stderr}`;
-        } else {
-             error = `Compilation failed with no specific error message.`
-        }
     } else {
-        error = 'Unknown execution error or malformed response.';
+      error = 'Unknown execution error or malformed response.';
     }
 
-
     if (error) {
-      return { error: error };
+      return { error: error, output: output }; 
     } else {
       return { output: output };
     }
 
   } catch (axiosError: any) {
     console.error('Piston API Error:', axiosError.response?.data || axiosError.message);
-    return { error: `Failed to execute code: ${axiosError.response?.data?.message || axiosError.message}` };
+    let errorMessage = `Failed to execute code: ${axiosError.message}`;
+    if (axiosError.response?.data?.message) {
+        errorMessage = `Failed to execute code: ${axiosError.response.data.message}`;
+    } else if (axiosError.response?.data) {
+        errorMessage = `Failed to execute code: ${JSON.stringify(axiosError.response.data)}`;
+    }
+    return { error: errorMessage };
   }
 }

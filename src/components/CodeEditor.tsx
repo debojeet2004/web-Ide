@@ -7,6 +7,7 @@ import clsx from 'clsx';
 // Import Shadcn components
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import SolutionViewer from './SolutionViewer';
 
 interface CodeEditorProps {
   code: string;
@@ -16,6 +17,8 @@ interface CodeEditorProps {
   onRunCode: () => void; 
   isLoading: boolean; 
   readOnly?: boolean;
+  problemId: string; 
+  problemTitle: string;
 }
 
 export default function CodeEditor({
@@ -26,6 +29,9 @@ export default function CodeEditor({
   onRunCode,       
   isLoading,       
   readOnly = false,
+  problemId,
+  problemTitle
+  
 }: CodeEditorProps) {
   const handleEditorChange = useCallback((value: string | undefined) => {
     onCodeChange(value || '');
@@ -36,6 +42,12 @@ export default function CodeEditor({
       <div className="flex-shrink-0 flex items-center justify-between p-2 bg-gray-800 border-b border-gray-700">
         <h3 className="text-xl font-bold text-gray-300">Code Editor</h3>
         <div className="flex items-center space-x-3">
+
+          <SolutionViewer
+              problemId={problemId}
+              problemTitle={problemTitle}
+          />
+
           <Select value={language} onValueChange={onLanguageChange} disabled={isLoading}>
             <SelectTrigger className="w-[120px] bg-gray-700 border-gray-600 text-gray-100">
               <SelectValue placeholder="Select language" />
