@@ -47,12 +47,12 @@ export default function ResultTabs({ output, problemTestCases, testRunResults }:
               Testcase
             </TabsTrigger>
             {/* output */}
-            <TabsTrigger
+            {/* <TabsTrigger
               value="output"
               className="px-6 py-3 text-sm font-medium data-[state=active]:bg-gray-900 data-[state=active]:shadow-none data-[state=active]:text-white data-[state=active]:font-bold rounded-none text-gray-400 transition-all" // Changed text-base to text-sm
             >
               Output
-            </TabsTrigger>
+            </TabsTrigger> */}
             {/* testresults */}
             <TabsTrigger
               value="testresults"
@@ -64,14 +64,14 @@ export default function ResultTabs({ output, problemTestCases, testRunResults }:
         </div>
 
         {/* Tab Contents */}
-        <TabsContent value="output" className="flex-1 p-6 overflow-y-auto bg-gray-900 data-[state=inactive]:hidden">
+        {/* <TabsContent value="output" className="flex-1 p-6 overflow-y-auto bg-gray-900 data-[state=inactive]:hidden">
           <h2 className="sr-only">Raw Output</h2>
           <Textarea
             readOnly
             className="w-full min-h-[250px] font-mono text-xs shadow-inner resize-none border border-gray-700 bg-gray-800 text-gray-200"
             value={output || 'Click "Run Code" to see raw output from the first test case.'}
           />
-        </TabsContent>
+        </TabsContent> */}
 
         <TabsContent value="testcase" className="flex-1 p-6 overflow-y-auto bg-gray-900 data-[state=inactive]:hidden">
           {/* Test Case Navigation (Case 1, Case 2, etc.) */}

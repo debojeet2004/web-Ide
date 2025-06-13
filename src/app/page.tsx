@@ -35,8 +35,8 @@ export default function HomePage() {
   const initialBoilerplate = currentProblem.boilerplate || getBoilerplate(currentProblem.language);
   const [code, setCode] = useState(initialBoilerplate);
 
-  const [output, setOutput] = useState(''); // General raw output from the first test run
-  const [testRunResults, setTestRunResults] = useState<TestRunResult[]>([]); // New state for detailed test results
+  const [output, setOutput] = useState('');
+  const [testRunResults, setTestRunResults] = useState<TestRunResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   
@@ -44,27 +44,20 @@ export default function HomePage() {
     if (currentProblem) {
       setActiveLanguage(currentProblem.language);
       setCode(currentProblem.boilerplate || getBoilerplate(currentProblem.language));
-      setOutput(''); // Clear raw output on problem change
-      setTestRunResults([]); // Clear test results on problem change
+      setOutput('');
+      setTestRunResults([]);
     }
   }, [currentProblemIndex, currentProblem]);
 
   const handleRunCode = useCallback(async () => {
     setIsLoading(true);
-    setOutput('Running code...'); // Initial message for the raw output tab
-    setTestRunResults([]); // Clear previous test results
+    setOutput('Running code...');
+    setTestRunResults([]); 
 
     const results: TestRunResult[] = [];
-    let overallError: string | undefined = undefined; // To capture first error
-
+    let overallError: string | undefined = undefined;
     for (const [index, testCase] of currentProblem.testCases.entries()) {
-      const testCaseId = `case-${index + 1}`; // Simple ID for display
-
-      // --- Keep these logs here, at the start of each test case iteration ---
-      console.log(`--- Running ${testCaseId} ---`);
-      console.log("Input:", testCase.input);
-      // --- END of common test case start logs ---
-
+      const testCaseId = `case-${index + 1}`;
 
       try {
         // IMPORTANT: We will update runCodeAction to accept stdin
@@ -75,54 +68,29 @@ export default function HomePage() {
         let error = result.error;
 
         if (error) {
-          // If there's an error, mark as failed and set the error message
           passed = false;
-          // Capture the first error for the general output display
           if (!overallError) {
             overallError = error;
           }
-        } else {
-          // --- START OF MODIFIED COMPARISON LOGIC ---
-
-          // Get the raw output from the user's code, trim whitespace (like newlines)
+        } else { 
           const processedActualOutput = actualOutput.trim();
-
-          // Get the expected output from problemsData.ts, trim whitespace
           let processedExpectedOutput = testCase.expectedOutput.trim();
-
-          // Attempt to parse the expected output as JSON.
-          // This will convert '"1"' into '1' (a raw string) for comparison.
-          // It also handles cases where expected output might be numbers, booleans, etc.
           try {
-            // Only attempt JSON.parse if it looks like a quoted string to avoid errors on raw numbers/booleans
             if (processedExpectedOutput.startsWith('"') && processedExpectedOutput.endsWith('"')) {
               const parsed = JSON.parse(processedExpectedOutput);
-              // If successfully parsed and it's a string, use the parsed string value
-              // (e.g., '"hello"' becomes 'hello')
-              // If it's a number (e.g., JSON.parse('"123"') is 123), it's also fine.
               processedExpectedOutput = parsed;
             }
-          } catch (e) {
-            // If JSON.parse fails (e.g., if expectedOutput was already '1' without quotes, or invalid JSON),
-            // just use the trimmed string as is.
-          }
-
-          // Finally, compare the processed outputs.
-          // Use String() to ensure consistent type for comparison,
-          // as JSON.parse could yield numbers/booleans from JSON string literals.
+          } catch (e) {}
+          //  compare the processed outputs.
           passed = String(processedActualOutput) === String(processedExpectedOutput);
-          if (passed) {
-            console.log(`Test Case ${testCaseId}: PASSED`); // New console.log
-          } else {
-            console.log(`Test Case ${testCaseId}: FAILED`); // New console.log
-            console.log("Expected:", testCase.expectedOutput); // New console.log
-            console.log("Actual:", actualOutput); // New console.log
-          }
-          
-
-          // --- END OF MODIFIED COMPARISON LOGIC ---
+          // if (passed) {
+          //   console.log(`Test Case ${testCaseId}: PASSED`); // New console.log
+          // } else {
+          //   console.log(`Test Case ${testCaseId}: FAILED`); // New console.log
+          //   console.log("Expected:", testCase.expectedOutput); // New console.log
+          //   console.log("Actual:", actualOutput); // New console.log
+          // }
         }
-
         results.push({
           testCaseId,
           input: testCase.input,
@@ -131,6 +99,12 @@ export default function HomePage() {
           passed: passed,
           error: error,
         });
+
+        console.log(`--- Running ${testCaseId} ---`);
+        console.log("Input:", testCase.input);
+        console.log("expectedOutput:", testCase.expectedOutput);
+        console.log("Output:", result.output);
+        console.log("error:", result.error);
 
       } catch (error: any) {
         console.error(`Error running test case ${testCaseId}:`, error);
@@ -142,38 +116,37 @@ export default function HomePage() {
           testCaseId,
           input: testCase.input,
           expectedOutput: testCase.expectedOutput,
-          actualOutput: '', // No actual output on client error
+          actualOutput: '',
           passed: false,
           error: errorMessage,
         });
-        // Continue to next test case even if one fails
       }
     }
-
     setTestRunResults(results);
 
     // Update the general output tab with the first test case's raw output or an overall error
     if (overallError) {
-      setOutput(`Error during execution:\n${overallError}\n\nDetailed results in 'Test Results' tab.`);
+      setOutput(`Error during execution:\n${overallError}`);
     } else if (results.length > 0) {
       // Show output of the first test case in the general output tab
       setOutput(results[0].actualOutput || 'No output received for first test case.');
     } else {
       setOutput('No test cases defined for this problem, or no output received.');
     }
-
     setIsLoading(false);
-  }, [code, activeLanguage, currentProblem.testCases]); // Add currentProblem.testCases as a dependency
+  }, [code, activeLanguage, currentProblem.testCases]); 
 
+
+  // Function for problem change
   const handleProblemChange = (index: number) => {
     if (index >= 0 && index < problems.length) {
       setCurrentProblemIndex(index);
     }
   };
 
+  // Function for Lnaguage change
   const handleLanguageChangeByUser = useCallback((newLanguage: string) => {
     setActiveLanguage(newLanguage);
-    // When user explicitly changes language, load the general boilerplate for that language
     setCode(getBoilerplate(newLanguage));
   }, []);
 

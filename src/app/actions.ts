@@ -88,15 +88,15 @@ export async function runCodeAction(
     else if (data.run) {
       if (data.run.stdout) {
         output = data.run.stdout;
-        console.log('Run Output:', output); // Log the run output
+        console.log('Run Output:', output); 
       }
       if (data.run.stderr) {
         error = data.run.stderr;
-        console.error('Run Error:', error); // Log the run error
+        console.error('Run Error:', error); 
       }
       if (data.run.code !== 0 && !error) {
         error = `Runtime Error (Exit Code: ${data.run.code})`;
-        console.log('Run Exit Code:', data.run.code); // Log the exit code
+        console.log('Run Exit Code:', data.run.code);
       }
     } else {
       error = 'Unknown execution error or malformed response.';
