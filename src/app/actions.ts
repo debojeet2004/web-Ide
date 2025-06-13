@@ -12,7 +12,6 @@ const languageMap: { [key: string]: string } = {
 
 const languageVersionMap: { [key: string]: string } = {
   javascript: '18.15.0',
-  // deno: '1.32.3',
   python: '3.10.0',
   cpp: '10.2.0',
   java: '15.0.2',
@@ -68,8 +67,7 @@ export async function runCodeAction(
           content: code,
         },
       ],
-      stdin: stdin, // ADDED: Pass the stdin here
-      // args: programArgs,
+      stdin: stdin,
     }, {
       headers: {
         'Content-Type': 'application/json',
