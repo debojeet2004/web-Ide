@@ -1,4 +1,5 @@
 // src/app/actions.ts
+
 'use server';
 
 import axios from 'axios';
@@ -106,7 +107,10 @@ export async function runCodeAction(
       return { output: output };
     }
 
-  } catch (axiosError: any) {
+  } catch (
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    axiosError: any
+  ) {
     console.error('Piston API Error:', axiosError.response?.data || axiosError.message);
     let errorMessage = `Failed to execute code: ${axiosError.message}`;
     if (axiosError.response?.data?.message) {

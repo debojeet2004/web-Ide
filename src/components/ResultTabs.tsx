@@ -18,7 +18,12 @@ interface ResultTabsProps {
   testRunResults: TestRunResult[];
 }
 
-export default function ResultTabs({ output, problemTestCases, testRunResults }: ResultTabsProps) {
+export default function ResultTabs({ 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  output, 
+  problemTestCases, 
+  testRunResults 
+}: ResultTabsProps) {
   const [activeConsoleTab, setActiveConsoleTab] = useState<'testcase' | 'output' | 'testresults'>('testcase');
   const [activeTestCaseIndex, setActiveTestCaseIndex] = useState(0);
 

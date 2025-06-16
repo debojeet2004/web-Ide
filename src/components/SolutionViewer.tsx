@@ -75,8 +75,8 @@ const [copied, setCopied] = useState(false)
               Confirm Solution View
             </AlertDialogTitle>
             <AlertDialogDescription className="text-gray-300">
-              Are you sure you want to view the solution for "
-              <strong>{problemTitle}</strong>"?
+              Are you sure you want to view the solution for &quot;
+              <strong>{problemTitle}</strong>&quot;?
               <br />
               <br />
               <span className="font-bold text-red-400">

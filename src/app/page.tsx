@@ -7,6 +7,7 @@ import { runCodeAction } from './actions';
 import { getBoilerplate } from '@/lib/codeSnippets';
 import { problems} from '@/data/problemsData';
 
+
 import {
   ResizableHandle,
   ResizablePanel,
@@ -64,8 +65,8 @@ export default function HomePage() {
         const result = await runCodeAction(code, activeLanguage, testCase.input);
 
         let passed = false;
-        let actualOutput = result.output || '';
-        let error = result.error;
+        const actualOutput = result.output || '';
+        const error = result.error;
 
         if (error) {
           passed = false;
@@ -80,7 +81,10 @@ export default function HomePage() {
               const parsed = JSON.parse(processedExpectedOutput);
               processedExpectedOutput = parsed;
             }
-          } catch (e) {}
+          } catch (
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            e
+          ) {}
           //  compare the processed outputs.
           passed = String(processedActualOutput) === String(processedExpectedOutput);
           // if (passed) {
@@ -106,7 +110,10 @@ export default function HomePage() {
         console.log("Output:", result.output);
         console.log("error:", result.error);
 
-      } catch (error: any) {
+      } catch (
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        error: any
+      ) {
         console.error(`Error running test case ${testCaseId}:`, error);
         const errorMessage = `Client Error running test case ${testCaseId}: ${error.message}`;
         if (!overallError) {
